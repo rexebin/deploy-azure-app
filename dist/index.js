@@ -4001,7 +4001,6 @@ async function run() {
         if (!azPath) {
             throw new Error('Azure CLI is not found in the runner.');
         }
-        core.info(`Azure CLI path: ${azPath}`);
         let output = '';
         const execOptions = {
             listeners: {
@@ -4010,19 +4009,12 @@ async function run() {
                 }
             }
         };
-        await executeAzCliCommand(azPath, ['--version'], true, execOptions);
-        core.info(`Azure CLI version used:\n${output}`);
         const serviceTag = core.getInput('serviceTag');
-        console.log(serviceTag);
         const pillarCode = core.getInput('pillarCode');
-        console.log(pillarCode);
         // const environmentName = core.getInput('environmentName');
         const instance = core.getInput('instance');
-        console.log(instance);
         const region = core.getInput('region');
-        console.log(region);
         const subscriptionId = core.getInput('subscriptionId');
-        console.log(subscriptionId);
         const args = [
             'functionapp',
             'list',
@@ -4033,12 +4025,47 @@ async function run() {
             '--output',
             'json'
         ];
-        output = '';
         await executeAzCliCommand(azPath, args, false, execOptions);
         const app = JSON.parse(output);
         console.log(app[0]);
         console.log(app[0].name);
         console.log(app[0].resourceGroup);
+        const stagingArgs = [
+            'functionapp',
+            'deployment',
+            'source',
+            'config-zip',
+            '-n',
+            app[0].name,
+            '-g',
+            app[0].resourceGroup,
+            '--slot',
+            'staging',
+            '--src',
+            './deploy/app.zip',
+            '--subscription',
+            subscriptionId
+        ];
+        output = '';
+        await executeAzCliCommand(azPath, stagingArgs, false, execOptions);
+        console.log(output);
+        const stagingSwapArgs = [
+            'functionapp',
+            'deployment',
+            'slot',
+            'swap',
+            '-n',
+            app[0].name,
+            '-g',
+            app[0].resourceGroup,
+            '--slot',
+            'staging',
+            '--subscription',
+            subscriptionId
+        ];
+        output = '';
+        await executeAzCliCommand(azPath, stagingSwapArgs, false, execOptions);
+        console.log(output);
     }
     catch (error) {
         // Fail the workflow run if an error occurs

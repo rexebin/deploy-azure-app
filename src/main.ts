@@ -24,9 +24,6 @@ export async function run(): Promise<void> {
     if (!azPath) {
       throw new Error('Azure CLI is not found in the runner.');
     }
-
-    core.info(`Azure CLI path: ${azPath}`);
-
     let output = '';
     const execOptions = {
       listeners: {
@@ -36,20 +33,12 @@ export async function run(): Promise<void> {
       }
     };
 
-    await executeAzCliCommand(azPath, ['--version'], true, execOptions);
-    core.info(`Azure CLI version used:\n${output}`);
-
     const serviceTag = core.getInput('serviceTag');
-    console.log(serviceTag);
     const pillarCode = core.getInput('pillarCode');
-    console.log(pillarCode);
     // const environmentName = core.getInput('environmentName');
     const instance = core.getInput('instance');
-    console.log(instance);
     const region = core.getInput('region');
-    console.log(region);
     const subscriptionId = core.getInput('subscriptionId');
-    console.log(subscriptionId);
 
     const args = [
       'functionapp',
@@ -61,12 +50,51 @@ export async function run(): Promise<void> {
       '--output',
       'json'
     ];
-    output = '';
     await executeAzCliCommand(azPath, args, false, execOptions);
     const app: { name: string; resourceGroup: string }[] = JSON.parse(output);
     console.log(app[0]);
     console.log(app[0].name);
     console.log(app[0].resourceGroup);
+
+    const stagingArgs = [
+      'functionapp',
+      'deployment',
+      'source',
+      'config-zip',
+      '-n',
+      app[0].name,
+      '-g',
+      app[0].resourceGroup,
+      '--slot',
+      'staging',
+      '--src',
+      './deploy/app.zip',
+      '--subscription',
+      subscriptionId
+    ];
+
+    output = '';
+    await executeAzCliCommand(azPath, stagingArgs, false, execOptions);
+    console.log(output);
+
+    const stagingSwapArgs = [
+      'functionapp',
+      'deployment',
+      'slot',
+      'swap',
+      '-n',
+      app[0].name,
+      '-g',
+      app[0].resourceGroup,
+      '--slot',
+      'staging',
+      '--subscription',
+      subscriptionId
+    ];
+
+    output = '';
+    await executeAzCliCommand(azPath, stagingSwapArgs, false, execOptions);
+    console.log(output);
   } catch (error) {
     // Fail the workflow run if an error occurs
     if (error instanceof Error) core.setFailed(error.message);
