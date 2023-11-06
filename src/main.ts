@@ -65,11 +65,12 @@ export async function run(): Promise<void> {
       '--output',
       'json'
     ];
+
+    console.log('Getting app name and resource group, please wait...');
     await executeAzCliCommand(azPath, args, false, execOptions);
     const app: { name: string; resourceGroup: string }[] = JSON.parse(output);
-    console.log(app[0]);
-    console.log(app[0].name);
-    console.log(app[0].resourceGroup);
+    console.log(`App Name is: ${app[0].name}`);
+    console.log(`App Resource Group Name: ${app[0].resourceGroup}`);
 
     const stagingArgs = [
       appTypeCommand,
@@ -89,8 +90,8 @@ export async function run(): Promise<void> {
     ];
 
     output = '';
+    console.log('Deploying to staging, please wait...');
     await executeAzCliCommand(azPath, stagingArgs, false, execOptions);
-    console.log(output);
 
     const stagingSwapArgs = [
       appTypeCommand,
@@ -104,13 +105,16 @@ export async function run(): Promise<void> {
       '--slot',
       'staging',
       '--subscription',
-      subscriptionId,
-      '--verbose'
+      subscriptionId
     ];
 
     output = '';
+    console.log('Swapping staging to production, please wait...');
     await executeAzCliCommand(azPath, stagingSwapArgs, false, execOptions);
-    console.log(output);
+    if (output === '') {
+      console.log('Swapping staging to production completed.');
+      return;
+    }
   } catch (error) {
     // Fail the workflow run if an error occurs
     if (error instanceof Error) core.setFailed(error.message);
