@@ -1,26 +1,71 @@
-import * as core from '@actions/core'
-import { wait } from './wait'
+import * as core from '@actions/core';
+import * as io from '@actions/io';
+import * as exec from '@actions/exec';
 
 /**
  * The main function for the action.
  * @returns {Promise<void>} Resolves when the action is complete.
  */
+
+async function executeAzCliCommand(
+  azPath: string,
+  args: string[],
+  silent?: boolean,
+  execOptions: any = {}
+) {
+  execOptions.silent = !!silent;
+  await exec.exec(`"${azPath}"`, args, execOptions);
+}
+
 export async function run(): Promise<void> {
   try {
-    const ms: string = core.getInput('milliseconds')
+    core.info(`Running Azure CLI Login.`);
+    const azPath = await io.which('az', true);
+    if (!azPath) {
+      throw new Error('Azure CLI is not found in the runner.');
+    }
 
-    // Debug logs are only output if the `ACTIONS_STEP_DEBUG` secret is true
-    core.debug(`Waiting ${ms} milliseconds ...`)
+    core.debug(`Azure CLI path: ${azPath}`);
 
-    // Log the current timestamp, wait, then log the new timestamp
-    core.debug(new Date().toTimeString())
-    await wait(parseInt(ms, 10))
-    core.debug(new Date().toTimeString())
+    let output = '';
+    const execOptions = {
+      listeners: {
+        stdout: (data: Buffer) => {
+          output += data.toString();
+        }
+      }
+    };
 
-    // Set outputs for other workflow steps to use
-    core.setOutput('time', new Date().toTimeString())
+    await executeAzCliCommand(azPath, ['--version'], true, execOptions);
+    core.debug(`Azure CLI version used:\n${output}`);
+
+    const serviceTag = core.getInput('serviceTag');
+    const pillarCode = core.getInput('pillarCode');
+    // const environmentName = core.getInput('environmentName');
+    const instance = core.getInput('instance');
+    const region = core.getInput('region');
+    const subscriptionId = core.getInput('subscriptionId');
+
+    const args = [
+      'functionapp',
+      'list',
+      '--query',
+      `[?tags.tag_application==${serviceTag} && 
+      tags.tag_pillar_code==${pillarCode} && 
+      tags.tag_instance_code==${instance} && 
+      location==${region}].{name: name, resourceGroup: resourceGroup}]`,
+      '--subscription',
+      subscriptionId,
+      '--output',
+      'json'
+    ];
+    output = '';
+    await executeAzCliCommand(azPath, args, true, execOptions);
+    console.log(output);
+    const functionApps = JSON.parse(output);
+    console.log(functionApps);
   } catch (error) {
     // Fail the workflow run if an error occurs
-    if (error instanceof Error) core.setFailed(error.message)
+    if (error instanceof Error) core.setFailed(error.message);
   }
 }
