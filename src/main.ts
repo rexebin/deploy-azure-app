@@ -58,7 +58,7 @@ export async function run(): Promise<void> {
       `[?tags.tag_application==${serviceTag} && 
       tags.tag_pillar_code==${pillarCode} && 
       tags.tag_instance_code==${instance} && 
-      location==${region}].{name: name, resourceGroup: resourceGroup}]`,
+      location==${region}].{name: name, resourceGroup: resourceGroup}`,
       '--subscription',
       subscriptionId,
       '--output',
