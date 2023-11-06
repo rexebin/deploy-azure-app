@@ -89,7 +89,8 @@ export async function run(): Promise<void> {
       '--slot',
       'staging',
       '--subscription',
-      subscriptionId
+      subscriptionId,
+      '--verbose'
     ];
 
     output = '';

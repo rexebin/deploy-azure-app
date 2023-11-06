@@ -4061,7 +4061,8 @@ async function run() {
             '--slot',
             'staging',
             '--subscription',
-            subscriptionId
+            subscriptionId,
+            '--verbose'
         ];
         output = '';
         await executeAzCliCommand(azPath, stagingSwapArgs, false, execOptions);
