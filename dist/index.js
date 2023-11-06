@@ -4013,11 +4013,16 @@ async function run() {
         await executeAzCliCommand(azPath, ['--version'], true, execOptions);
         core.info(`Azure CLI version used:\n${output}`);
         const serviceTag = core.getInput('serviceTag');
+        console.log(serviceTag);
         const pillarCode = core.getInput('pillarCode');
+        console.log(pillarCode);
         // const environmentName = core.getInput('environmentName');
         const instance = core.getInput('instance');
+        console.log(instance);
         const region = core.getInput('region');
+        console.log(region);
         const subscriptionId = core.getInput('subscriptionId');
+        console.log(subscriptionId);
         const args = [
             'functionapp',
             'list',
@@ -4031,8 +4036,9 @@ async function run() {
             '--output',
             'json'
         ];
+        console.log(args);
         output = '';
-        await executeAzCliCommand(azPath, args, true, execOptions);
+        await executeAzCliCommand(azPath, args, false, execOptions);
         console.log(output);
         const functionApps = JSON.parse(output);
         console.log(functionApps);
