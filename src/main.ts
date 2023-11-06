@@ -25,7 +25,7 @@ export async function run(): Promise<void> {
       throw new Error('Azure CLI is not found in the runner.');
     }
 
-    core.debug(`Azure CLI path: ${azPath}`);
+    core.info(`Azure CLI path: ${azPath}`);
 
     let output = '';
     const execOptions = {
@@ -37,7 +37,7 @@ export async function run(): Promise<void> {
     };
 
     await executeAzCliCommand(azPath, ['--version'], true, execOptions);
-    core.debug(`Azure CLI version used:\n${output}`);
+    core.info(`Azure CLI version used:\n${output}`);
 
     const serviceTag = core.getInput('serviceTag');
     const pillarCode = core.getInput('pillarCode');
