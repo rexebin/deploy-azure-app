@@ -61,12 +61,12 @@ export async function run(): Promise<void> {
       '--output',
       'json'
     ];
-    console.log(args);
     output = '';
     await executeAzCliCommand(azPath, args, false, execOptions);
-    console.log(output);
-    const functionApps = JSON.parse(output);
-    console.log(functionApps);
+    const app: { name: string; resourceGroup: string } = JSON.parse(output);
+    console.log(app);
+    console.log(app.name);
+    console.log(app.resourceGroup);
   } catch (error) {
     // Fail the workflow run if an error occurs
     if (error instanceof Error) core.setFailed(error.message);

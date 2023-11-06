@@ -4033,12 +4033,12 @@ async function run() {
             '--output',
             'json'
         ];
-        console.log(args);
         output = '';
         await executeAzCliCommand(azPath, args, false, execOptions);
-        console.log(output);
-        const functionApps = JSON.parse(output);
-        console.log(functionApps);
+        const app = JSON.parse(output);
+        console.log(app);
+        console.log(app.name);
+        console.log(app.resourceGroup);
     }
     catch (error) {
         // Fail the workflow run if an error occurs
