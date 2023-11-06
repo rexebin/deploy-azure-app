@@ -4016,7 +4016,7 @@ async function run() {
         const region = core.getInput('region');
         const subscriptionId = core.getInput('subscriptionId');
         const appType = core.getInput('appType');
-        if (appType.toLowerCase() !== 'function' ||
+        if (appType.toLowerCase() !== 'function' &&
             appType.toLowerCase() !== 'api') {
             throw new Error(`Input appType must be either 'function' or 'api'`);
         }

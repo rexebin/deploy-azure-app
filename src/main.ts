@@ -41,7 +41,7 @@ export async function run(): Promise<void> {
     const subscriptionId = core.getInput('subscriptionId');
     const appType = core.getInput('appType');
     if (
-      appType.toLowerCase() !== 'function' ||
+      appType.toLowerCase() !== 'function' &&
       appType.toLowerCase() !== 'api'
     ) {
       throw new Error(`Input appType must be either 'function' or 'api'`);
