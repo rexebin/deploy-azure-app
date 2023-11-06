@@ -4036,9 +4036,9 @@ async function run() {
         output = '';
         await executeAzCliCommand(azPath, args, false, execOptions);
         const app = JSON.parse(output);
-        console.log(app);
-        console.log(app.name);
-        console.log(app.resourceGroup);
+        console.log(app[0]);
+        console.log(app[0].name);
+        console.log(app[0].resourceGroup);
     }
     catch (error) {
         // Fail the workflow run if an error occurs
