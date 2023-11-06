@@ -4016,12 +4016,19 @@ async function run() {
         const region = core.getInput('region');
         const subscriptionId = core.getInput('subscriptionId');
         const appType = core.getInput('appType');
-        if (appType.toLowerCase() !== 'functionapp' ||
-            appType.toLowerCase() !== 'webapp') {
-            throw new Error(`Input appType must be either 'functionapp' or 'webapp'`);
+        if (appType.toLowerCase() !== 'function' ||
+            appType.toLowerCase() !== 'api') {
+            throw new Error(`Input appType must be either 'function' or 'api'`);
+        }
+        let appTypeCommand = '';
+        if (appType.toLowerCase() === 'function') {
+            appTypeCommand = 'functionapp';
+        }
+        if (appType.toLowerCase() === 'api') {
+            appTypeCommand = 'webapp';
         }
         const args = [
-            appType.toLowerCase(),
+            appTypeCommand,
             'list',
             '--query',
             `[?tags.tag_application=='${serviceTag}'&&tags.tag_pillar_code=='${pillarCode}'&&tags.tag_instance_code=='${instance}'&&location=='${region}'].{name: name, resourceGroup: resourceGroup}`,
@@ -4036,7 +4043,7 @@ async function run() {
         console.log(app[0].name);
         console.log(app[0].resourceGroup);
         const stagingArgs = [
-            appType.toLowerCase(),
+            appTypeCommand,
             'deployment',
             'source',
             'config-zip',
@@ -4055,7 +4062,7 @@ async function run() {
         await executeAzCliCommand(azPath, stagingArgs, false, execOptions);
         console.log(output);
         const stagingSwapArgs = [
-            appType.toLowerCase(),
+            appTypeCommand,
             'deployment',
             'slot',
             'swap',
