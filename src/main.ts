@@ -39,9 +39,16 @@ export async function run(): Promise<void> {
     const instance = core.getInput('instance');
     const region = core.getInput('region');
     const subscriptionId = core.getInput('subscriptionId');
+    const appType = core.getInput('appType');
+    if (
+      appType.toLowerCase() !== 'functionapp' ||
+      appType.toLowerCase() !== 'webapp'
+    ) {
+      throw new Error(`Input appType must be either 'functionapp' or 'webapp'`);
+    }
 
     const args = [
-      'functionapp',
+      appType.toLowerCase(),
       'list',
       '--query',
       `[?tags.tag_application=='${serviceTag}'&&tags.tag_pillar_code=='${pillarCode}'&&tags.tag_instance_code=='${instance}'&&location=='${region}'].{name: name, resourceGroup: resourceGroup}`,
@@ -57,7 +64,7 @@ export async function run(): Promise<void> {
     console.log(app[0].resourceGroup);
 
     const stagingArgs = [
-      'functionapp',
+      appType.toLowerCase(),
       'deployment',
       'source',
       'config-zip',
@@ -78,7 +85,7 @@ export async function run(): Promise<void> {
     console.log(output);
 
     const stagingSwapArgs = [
-      'functionapp',
+      appType.toLowerCase(),
       'deployment',
       'slot',
       'swap',

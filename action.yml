@@ -22,6 +22,9 @@ inputs:
   subscriptionId:
     description: 'Subscription Id'
     required: true
+  appType:
+    description: 'App Type'
+    required: true
 
 
 runs:
