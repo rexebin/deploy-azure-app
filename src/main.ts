@@ -68,7 +68,7 @@ export async function run(): Promise<void> {
       '--slot',
       'staging',
       '--src',
-      './deploy/app.zip',
+      './app.zip',
       '--subscription',
       subscriptionId
     ];

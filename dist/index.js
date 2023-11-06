@@ -4042,7 +4042,7 @@ async function run() {
             '--slot',
             'staging',
             '--src',
-            './deploy/app.zip',
+            './app.zip',
             '--subscription',
             subscriptionId
         ];
