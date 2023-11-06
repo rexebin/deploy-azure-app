@@ -23,8 +23,6 @@ inputs:
     description: 'Subscription Id'
     required: true
 
-# Define your outputs here.
-outputs:
 
 runs:
   using: node20
