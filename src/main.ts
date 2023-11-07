@@ -1,120 +1,15 @@
 import * as core from '@actions/core';
-import * as io from '@actions/io';
-import * as exec from '@actions/exec';
-
-/**
- * The main function for the action.
- * @returns {Promise<void>} Resolves when the action is complete.
- */
-
-async function executeAzCliCommand(
-  azPath: string,
-  args: string[],
-  silent?: boolean,
-  execOptions: any = {}
-) {
-  execOptions.silent = !!silent;
-  await exec.exec(`"${azPath}"`, args, execOptions);
-}
+import { getConfig } from './config';
+import { getAppMetadata } from './get-app-metadata';
+import { stage } from './stage';
+import { swap } from './swap';
 
 export async function run(): Promise<void> {
   try {
-    core.info(`Running Azure CLI Login.`);
-    const azPath = await io.which('az', true);
-    if (!azPath) {
-      throw new Error('Azure CLI is not found in the runner.');
-    }
-    let output = '';
-    const execOptions = {
-      listeners: {
-        stdout: (data: Buffer) => {
-          output += data.toString();
-        }
-      }
-    };
-
-    const serviceTag = core.getInput('serviceTag');
-    const pillarCode = core.getInput('pillarCode');
-    // const environmentName = core.getInput('environmentName');
-    const instance = core.getInput('instance');
-    const region = core.getInput('region');
-    const subscriptionId = core.getInput('subscriptionId');
-    const appType = core.getInput('appType');
-    if (
-      appType.toLowerCase() !== 'function' &&
-      appType.toLowerCase() !== 'api'
-    ) {
-      throw new Error(`Input appType must be either 'function' or 'api'`);
-    }
-
-    let appTypeCommand = '';
-    if (appType.toLowerCase() === 'function') {
-      appTypeCommand = 'functionapp';
-    }
-    if (appType.toLowerCase() === 'api') {
-      appTypeCommand = 'webapp';
-    }
-
-    const args = [
-      appTypeCommand,
-      'list',
-      '--query',
-      `[?tags.tag_application=='${serviceTag}'&&tags.tag_pillar_code=='${pillarCode}'&&tags.tag_instance_code=='${instance}'&&location=='${region}'].{name: name, resourceGroup: resourceGroup}`,
-      '--subscription',
-      subscriptionId,
-      '--output',
-      'json'
-    ];
-
-    console.log('Getting app name and resource group, please wait...');
-    await executeAzCliCommand(azPath, args, false, execOptions);
-    const app: { name: string; resourceGroup: string }[] = JSON.parse(output);
-    console.log(`App Name is: ${app[0].name}`);
-    console.log(`App Resource Group Name: ${app[0].resourceGroup}`);
-
-    const stagingArgs = [
-      appTypeCommand,
-      'deployment',
-      'source',
-      'config-zip',
-      '-n',
-      app[0].name,
-      '-g',
-      app[0].resourceGroup,
-      '--slot',
-      'staging',
-      '--src',
-      './app.zip',
-      '--subscription',
-      subscriptionId
-    ];
-
-    output = '';
-    console.log('Deploying to staging, please wait...');
-    await executeAzCliCommand(azPath, stagingArgs, false, execOptions);
-
-    const stagingSwapArgs = [
-      appTypeCommand,
-      'deployment',
-      'slot',
-      'swap',
-      '-n',
-      app[0].name,
-      '-g',
-      app[0].resourceGroup,
-      '--slot',
-      'staging',
-      '--subscription',
-      subscriptionId
-    ];
-
-    output = '';
-    console.log('Swapping staging to production, please wait...');
-    await executeAzCliCommand(azPath, stagingSwapArgs, false, execOptions);
-    if (output === '') {
-      console.log('Swapping staging to production completed.');
-      return;
-    }
+    const config = await getConfig();
+    const app = await getAppMetadata(config);
+    await stage(config, app);
+    await swap(config, app);
   } catch (error) {
     // Fail the workflow run if an error occurs
     if (error instanceof Error) core.setFailed(error.message);
