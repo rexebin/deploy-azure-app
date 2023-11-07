@@ -25,7 +25,7 @@ function getInput(name: string) {
 async function getAzPath() {
   core.info(`Running Azure CLI Login.`);
   const azPath = await io.which('az', true);
-  if (!azPath) {
+  if (!azPath || azPath.includes('not found')) {
     throw new Error('Azure CLI is not found in the runner.');
   }
   return azPath;

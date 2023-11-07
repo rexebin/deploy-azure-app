@@ -7,7 +7,7 @@ import * as exec from '@actions/exec';
 export async function executeAzCliCommand(
   azPath: string,
   args: string[],
-  silent?: boolean
+  silent = false
 ): Promise<string> {
   let output = '';
   const execOptions = {
@@ -16,7 +16,7 @@ export async function executeAzCliCommand(
         output += data.toString();
       }
     },
-    silent: !!silent
+    silent
   };
 
   await exec.exec(`"${azPath}"`, args, execOptions);

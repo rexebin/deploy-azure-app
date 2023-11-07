@@ -4007,7 +4007,7 @@ function getInput(name) {
 async function getAzPath() {
     core.info(`Running Azure CLI Login.`);
     const azPath = await io.which('az', true);
-    if (!azPath) {
+    if (!azPath || azPath.includes('not found')) {
         throw new Error('Azure CLI is not found in the runner.');
     }
     return azPath;
@@ -4064,7 +4064,7 @@ exports.executeAzCliCommand = void 0;
  * @returns {Promise<void>} Resolves when the action is complete.
  */
 const exec = __importStar(__nccwpck_require__(1514));
-async function executeAzCliCommand(azPath, args, silent) {
+async function executeAzCliCommand(azPath, args, silent = false) {
     let output = '';
     const execOptions = {
         listeners: {
@@ -4072,7 +4072,7 @@ async function executeAzCliCommand(azPath, args, silent) {
                 output += data.toString();
             }
         },
-        silent: !!silent
+        silent
     };
     await exec.exec(`"${azPath}"`, args, execOptions);
     return output;
@@ -4104,8 +4104,11 @@ async function getAppMetadata(config) {
     console.log('Getting app name and resource group, please wait...');
     const output = await (0, execute_az_cli_command_1.executeAzCliCommand)(config.azPath, args, false);
     const app = JSON.parse(output);
-    if (app.length !== 1) {
-        throw new Error('App not found or multiple apps found.');
+    if (app.length > 1) {
+        throw new Error('Multiple apps found.');
+    }
+    if (app.length === 0) {
+        throw new Error('No apps found.');
     }
     console.log(`App Name is: ${app[0].name}`);
     console.log(`App Resource Group Name: ${app[0].resourceGroup}`);

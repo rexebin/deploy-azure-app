@@ -16,8 +16,11 @@ export async function getAppMetadata(config: Config) {
   console.log('Getting app name and resource group, please wait...');
   const output = await executeAzCliCommand(config.azPath, args, false);
   const app: { name: string; resourceGroup: string }[] = JSON.parse(output);
-  if (app.length !== 1) {
-    throw new Error('App not found or multiple apps found.');
+  if (app.length > 1) {
+    throw new Error('Multiple apps found.');
+  }
+  if (app.length === 0) {
+    throw new Error('No apps found.');
   }
   console.log(`App Name is: ${app[0].name}`);
   console.log(`App Resource Group Name: ${app[0].resourceGroup}`);
